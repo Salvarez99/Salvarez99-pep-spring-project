@@ -24,8 +24,21 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
+    public Account getAccountById(int id) {
+        return accountRepository.findById(id).orElse(null);
+    }
+    
     public Optional<Account> findAccountByUsername(String username) {
         return accountRepository.findByUsername(username);
+    }
+
+    public Account checkAccountCredentials(String username, String password){
+
+        Optional<Account> optionalAccount = accountRepository.findByUsernameAndPassword(username, password);
+        if(optionalAccount.isPresent()){
+            return optionalAccount.get();
+        }
+        return null;
     }
 }
 

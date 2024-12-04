@@ -1,7 +1,10 @@
 package com.example.controller;
 
 import com.example.entity.Account;
+import com.example.entity.Message;
 import com.example.service.AccountService;
+import com.example.service.MessageService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +15,9 @@ public class SocialMediaController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private MessageService messageService;
 
     @PostMapping(value = "/register")
     public ResponseEntity<?> registerAccount(@RequestBody Account account) {
@@ -27,6 +33,43 @@ public class SocialMediaController {
         return ResponseEntity.status(200).body(savedAccount);
     }
 
+    @PostMapping(value = "/login")
+    public ResponseEntity<?> processUserLogin(@RequestBody Account account){
+
+        Account verified = verifiedAccount(account);
+        if(verified != null){
+            return ResponseEntity.status(200).body(verified);
+        }
+        return ResponseEntity.status(401).body("Username or Password is incorrect");
+    }
+
+    @PostMapping(value = "/messages")
+    public ResponseEntity<?> createMessage(@RequestBody Message message){
+        //not blank not over 255, postedBy refers to account id
+
+        if(accountService.getAccountById(message.getPostedBy()) != null){
+
+            if(isValidMessage(message)){
+                Message validMessage = messageService.persistMessage(message);
+                return ResponseEntity.status(200).body(validMessage);
+            }
+            
+        }
+        return ResponseEntity.status(400).body("");
+    }
+
+    
+
+
+
+
+
+
+
+
+
+
+    //Helpers
     private boolean hasUsername(Account account) {
         return account.getUsername() != null && !account.getUsername().isBlank();
     }
@@ -37,5 +80,13 @@ public class SocialMediaController {
 
     private boolean isValidPassword(Account account) {
         return account.getPassword() != null && account.getPassword().length() >= 4;
+    }
+
+    private Account verifiedAccount(Account account){
+        return accountService.checkAccountCredentials(account.getUsername(), account.getPassword());
+    }
+
+    private boolean isValidMessage(Message message){
+        return message.getMessageText().length() < 255 && !message.getMessageText().trim().isBlank();
     }
 }
