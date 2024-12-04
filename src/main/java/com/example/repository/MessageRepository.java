@@ -9,4 +9,8 @@ import org.springframework.data.repository.query.Param;
 import com.example.entity.Message;
 
 public interface MessageRepository extends JpaRepository<Message, Integer>{
+
+    @Query("SELECT m FROM Message m WHERE m.postedBy = :accountIdVar")
+    public List<Message> findAllByPostedBy(@Param("accountIdVar") int accountId);
+    
 }

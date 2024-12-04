@@ -34,4 +34,18 @@ public class MessageService {
     public Message getMessageById(int messageId) {
         return messageRepository.findById(messageId).orElse(null);
     }
+
+    public int deleteMessageById(int messageId) {
+        Message message = getMessageById(messageId);
+
+        if(message != null){
+            messageRepository.deleteById(messageId);
+            return 1;
+        }
+        return 0;
+    }
+
+    public List<Message> getAllMessagesById(int accountId) {
+        return messageRepository.findAllByPostedBy(accountId);
+    }
 }
