@@ -45,7 +45,6 @@ public class SocialMediaController {
 
     @PostMapping(value = "/messages")
     public ResponseEntity<?> createMessage(@RequestBody Message message){
-        //not blank not over 255, postedBy refers to account id
 
         if(accountService.getAccountById(message.getPostedBy()) != null){
 
@@ -76,15 +75,23 @@ public class SocialMediaController {
         return ResponseEntity.status(200).build();
     }
 
+    @PatchMapping("/messages/{messageId}")
+    public ResponseEntity<?> updateMessageById(@PathVariable int messageId, @RequestBody Message newMessage) {
+        Message message = messageService.getMessageById(messageId);
+        
+        if (message != null && isValidMessage(newMessage)) {
+            message.setMessageText(newMessage.getMessageText()); 
+            messageService.persistMessage(message); 
+            return ResponseEntity.status(200).body(1); 
+        }
+        
+        return ResponseEntity.status(400).body(0);
+    }
+
     @GetMapping(value = "/accounts/{accountId}/messages")
     public ResponseEntity<?> getAllMessagesById(@PathVariable int accountId){
         return ResponseEntity.status(200).body(messageService.getAllMessagesById(accountId));
     }
-
-
-
-
-
 
 
 
@@ -105,7 +112,8 @@ public class SocialMediaController {
         return accountService.checkAccountCredentials(account.getUsername(), account.getPassword());
     }
 
-    private boolean isValidMessage(Message message){
-        return message.getMessageText().length() < 255 && !message.getMessageText().trim().isBlank();
+    private boolean isValidMessage(Message message) {
+        String messageText = message.getMessageText();
+        return messageText != null && messageText.length() <= 255 && !(messageText.isBlank()) && !messageText.isEmpty() && messageText != "";
     }
 }
